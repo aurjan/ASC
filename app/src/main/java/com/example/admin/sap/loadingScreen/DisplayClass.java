@@ -33,10 +33,20 @@ import static android.content.ContentValues.TAG;
  */
 
 public class DisplayClass extends Activity implements AdapterView.OnItemSelectedListener{
-    private List<HarmfulAppsData> appList;
+    private boolean completed= false;
+    boolean loaded = false;
 
-    public void setAppList(List<HarmfulAppsData> appList) {
-        this.appList = appList;
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
+
+
+    private void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     @Override
@@ -44,46 +54,54 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_layout);
 
-        Log.d("MY_APP_TAG", "There are no known " +
-                "potentially harmful apps installed.");
-
         SafetyNet.getClient(this)
                 .listHarmfulApps()
                 .addOnCompleteListener(new OnCompleteListener<SafetyNetApi.HarmfulAppsResponse>() {
                     @Override
                     public void onComplete(Task<SafetyNetApi.HarmfulAppsResponse> task) {
-                        Log.d(TAG, "Received listHarmfulApps() result");
-
-                        if (task.isSuccessful()) {
-                            com.google.android.gms.safetynet.SafetyNetApi.HarmfulAppsResponse result = task.getResult();
-                            long scanTimeMs = result.getLastScanTimeMs();
-
-                            List<HarmfulAppsData> appList = result.getHarmfulAppsList();
-                            setAppList(appList);
-                            if (appList.isEmpty()) {
-                                Log.d("MY_APP_TAG", "There are no known " +
-                                        "potentially harmful apps installed.");
-                            } else {
-                                Log.e("MY_APP_TAG",
-                                        "Potentially harmful apps are installed!");
-
-                                for (HarmfulAppsData harmfulApp : appList) {
-                                    Log.e("MY_APP_TAG", "Information about a harmful app:");
-                                    Log.e("MY_APP_TAG",
-                                            "  APK: " + harmfulApp.apkPackageName);
-                                    Log.e("MY_APP_TAG",
-                                            "  SHA-256: " + harmfulApp.apkSha256);
-
-                                    // Categories are defined in VerifyAppsConstants.
-                                    Log.e("MY_APP_TAG",
-                                            "  Category: " + harmfulApp.apkCategory);
-                                }
+                        if (completed){
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        } else {
-                            Log.d("MY_APP_TAG", "An error occurred. " +
-                                    "Call isVerifyAppsEnabled() to ensure " +
-                                    "that the user has consented.");
+                        }else {
+                            Log.d(TAG, "Received listHarmfulApps() result");
+
+                            if (task.isSuccessful()) {
+                                com.google.android.gms.safetynet.SafetyNetApi.HarmfulAppsResponse result = task.getResult();
+                                long scanTimeMs = result.getLastScanTimeMs();
+
+                                List<HarmfulAppsData> appList = result.getHarmfulAppsList();
+                                loadSpinner(appList);
+                                setCompleted(true);
+                                if (appList.isEmpty()) {
+                                    Log.d("MY_APP_TAG", "There are no known " +
+                                            "potentially harmful apps installed.");
+                                } else {
+                                    Log.e("MY_APP_TAG",
+                                            "Potentially harmful apps are installed!");
+
+                                    for (HarmfulAppsData harmfulApp : appList) {
+                                        Log.e("MY_APP_TAG", "Information about a harmful app:");
+                                        Log.e("MY_APP_TAG",
+                                                "  APK: " + harmfulApp.apkPackageName);
+                                        Log.e("MY_APP_TAG",
+                                                "  SHA-256: " + harmfulApp.apkSha256);
+
+                                        // Categories are defined in VerifyAppsConstants.
+                                        Log.e("MY_APP_TAG",
+                                                "  Category: " + harmfulApp.apkCategory);
+                                    }
+                                }
+                            } else {
+                                Log.d("MY_APP_TAG", "An error occurred. " +
+                                        "Call isVerifyAppsEnabled() to ensure " +
+                                        "that the user has consented.");
+                            }
                         }
+
+
                     }
                 });
 
@@ -91,21 +109,48 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
         //String tv;
         TextView tv = findViewById(R.id.textView3);
         tv.setMovementMethod( new ScrollingMovementMethod());
-        ArrayList<String> progArray = new ArrayList<>();
-        Spinner spinner = findViewById(R.id.spinner);
 
-        for (HarmfulAppsData packageInfo : appList) {
-            //Log.d(TAG, "Installed package :" + packageInfo.packageName);
-            //Log.d(TAG, "Source dir : " + packageInfo.sourceDir);
-            String stringName = ("Package : " + packageInfo.apkPackageName);
-            progArray.add(stringName);
-            //Log.d(TAG, "Launch Activity :" + pm.getLaunchIntentForPackage(packageInfo.packageName));
+
+        setLoaded(true);
+
+
+    }
+    private void loadSpinner(List<HarmfulAppsData> appList){
+
+
+        ArrayList<String> progArray = new ArrayList<>();
+        try {
+            String len = "" +appList.size();
+            Log.e("spinner", len);
+            for (HarmfulAppsData harmfulApp : appList) {
+                Log.e("testing", "Information about a harmful app:");
+                Log.e("testing",
+                        "  APK: " + harmfulApp.apkPackageName);
+                Log.e("testing",
+                        "  SHA-256: " + harmfulApp.apkSha256);
+
+                // Categories are defined in VerifyAppsConstants.
+                Log.e("testing",
+                        "  Category: " + harmfulApp.apkCategory);
+            }
+
+            Spinner spinner = findViewById(R.id.spinner);
+            for (HarmfulAppsData packageInfo : appList) {
+                //Log.d(TAG, "Installed package :" + packageInfo.packageName);
+                //Log.d(TAG, "Source dir : " + packageInfo.sourceDir);
+                String stringName = ("Package : " + packageInfo.apkPackageName);
+                progArray.add(stringName);
+                //Log.d(TAG, "Launch Activity :" + pm.getLaunchIntentForPackage(packageInfo.packageName));
+            }
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, progArray);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            // Apply the adapter to the spinner
+            spinner.setAdapter(adapter);
+            spinner.setOnItemSelectedListener(this);
+        }catch (Exception e){
+            Log.e("spinner",e.getMessage());
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, progArray);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
+
 
     }
 
@@ -139,11 +184,6 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
     @Override
     protected void onStart() {
         super.onStart();
-
-
-        Intent i = new Intent(this, DisplayClass.class);
-        startActivity(i);
-
 
     }
 

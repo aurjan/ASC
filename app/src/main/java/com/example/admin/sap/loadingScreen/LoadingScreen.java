@@ -47,7 +47,8 @@ public class LoadingScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loadingscreen_layout);
         enable();
-        new Handler().postDelayed(new Runnable() {
+        test();
+        new Handler().post(new Runnable() {
 
         /*
          * Showing splash screen with a timer. This will be useful when you
@@ -60,19 +61,20 @@ public class LoadingScreen extends Activity {
                 // Start your app main activity
                 Intent i = new Intent(LoadingScreen.this, DisplayClass.class);
                 startActivity(i);
-
+                DisplayClass displayClass = new DisplayClass();
+                if(displayClass.isLoaded()){
+                    finish();
+                }
                 // close this activity
-                finish();
+                //finish();
             }
-        }, 2000);
+        });
 
     }
 
     public void test() {
         TextView txt = findViewById(R.id.statusView);
         txt.setText("Scanning");
-
-        txt.setText("Done");
 
     }
 
