@@ -2,18 +2,25 @@ package com.example.admin.sap.loadingScreen;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.admin.sap.MainActivity;
 import com.example.admin.sap.R;
-import java.util.List;
 
-import com.example.admin.sap.SplashScreen;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.example.admin.sap.displayScreens.DisplayClass;
 import com.google.android.gms.safetynet.HarmfulAppsData;
 import com.google.android.gms.safetynet.SafetyNet;
+import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -35,41 +42,72 @@ import static android.content.ContentValues.TAG;
 //
 //    }
 
-public class LoadingScreen extends Activity {
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
-
-    private boolean isEnabled = false;
-
+public class LoadingScreen extends Activity implements  AsyncResponse{
+    private Map<String,ApplicationInfo> appMap = new HashMap<>();
+    int total;
+    private HashMap <String, ApplicationInfo> map;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loadingscreen_layout);
         enable();
         test();
-        new Handler().post(new Runnable() {
+        checkPackages();
 
-        /*
-         * Showing splash screen with a timer. This will be useful when you
-         * want to show case your app logo / company
-         */
 
-            @Override
-            public void run() {
-                // This method will be executed once the timer is over
-                // Start your app main activity
-                Intent i = new Intent(LoadingScreen.this, DisplayClass.class);
-                startActivity(i);
-                DisplayClass displayClass = new DisplayClass();
-                if(displayClass.isLoaded()){
-                    finish();
+
+    }
+
+    @Override
+    public void processFinish(Map <String,ApplicationInfo> returnedMap) {
+        System.out.println("size of map: " + returnedMap.size());
+        map = (HashMap <String, ApplicationInfo>) returnedMap;
+
+
+//        startActivity(loadingIntent);
+        getGoogleAPI();
+
+    }
+
+    private void checkPackages() {
+        BackGroundTasks backGroundTasks = new BackGroundTasks(this);
+        final PackageManager pm = getPackageManager();
+        List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+        //String tv;
+        total = packages.size();
+        for (ApplicationInfo pack : packages) {
+            PackageInfo info = null;
+            try {
+                info = getPackageManager().getPackageInfo(
+                        pack.packageName, PackageManager.GET_SIGNATURES);
+
+                StringBuilder sb = new StringBuilder();
+                for (android.content.pm.Signature signature : info.signatures) {
+
+                    MessageDigest md;
+                    md = MessageDigest.getInstance("MD5");
+                    md.update(signature.toByteArray());
+                    byte[] digestByteArray = md.digest();
+
+                    sb = new StringBuilder();
+                    for (byte b : digestByteArray) {
+                        sb.append(String.format("%02x", b & 0xff));
+                    }
+                    appMap.put(sb.toString(),pack);
                 }
-                // close this activity
-                //finish();
-            }
-        });
 
+
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            String method = "MD5";
+
+
+
+        }
+        backGroundTasks.execute(appMap);
     }
 
     public void test() {
@@ -113,7 +151,6 @@ public class LoadingScreen extends Activity {
                             com.google.android.gms.safetynet.SafetyNetApi.VerifyAppsUserResponse result = task.getResult();
                             if (result.isVerifyAppsEnabled()) {
                                 Log.d("MY_APP_TAG", "The Verify Apps feature is enabled.");
-                                setEnabled(true);
 
                             } else {
                                 Log.d("MY_APP_TAG", "The Verify Apps feature is disabled.");
@@ -127,50 +164,63 @@ public class LoadingScreen extends Activity {
                     }
                 });
     }
+
+    private void getGoogleAPI() {
+        setContentView(R.layout.display_layout);
+
+        SafetyNet.getClient(this)
+                .listHarmfulApps()
+                .addOnCompleteListener(new OnCompleteListener<SafetyNetApi.HarmfulAppsResponse>() {
+                    @Override
+                    public void onComplete(Task<SafetyNetApi.HarmfulAppsResponse> task) {
+
+                        Log.d(TAG, "Received listHarmfulApps() result");
+
+                        if (task.isSuccessful()) {
+                            SafetyNetApi.HarmfulAppsResponse result = task.getResult();
+
+//                                TextView tv = findViewById(R.id.textView3);
+//                                tv.setText("List of threats");
+//                                tv.setMovementMethod(new ScrollingMovementMethod());
+                            List<HarmfulAppsData> appList = result.getHarmfulAppsList();
+                            HashMap <String,HarmfulAppsData> harmfulAppsDataHashMap = new HashMap<>();
+
+                            for (HarmfulAppsData harmfulAppsData: appList){
+                                harmfulAppsDataHashMap.put(harmfulAppsData.toString(),harmfulAppsData);
+                            }
+                            Intent loadingIntent = new Intent(LoadingScreen.this, DisplayClass.class);
+                            loadingIntent.putExtra("total",total);
+                            loadingIntent.putExtra("map", map);
+                            loadingIntent.putExtra("harmfulAppsData", harmfulAppsDataHashMap);
+                            startActivity(loadingIntent);
+//
+//                            if (appList.isEmpty()) {
+//                                Log.d("MY_APP_TAG", "There are no known " +
+//                                        "potentially harmful apps installed.");
+//                            } else {
+//                                Log.e("MY_APP_TAG",
+//                                        "Potentially harmful apps are installed!");
+//
+//                                for (HarmfulAppsData harmfulApp : appList) {
+//                                    Log.e("MY_APP_TAG", "Information about a harmful app:");
+//                                    Log.e("MY_APP_TAG",
+//                                            "  APK: " + harmfulApp.apkPackageName);
+//                                    Log.e("MY_APP_TAG",
+//                                            "  SHA-256: " + harmfulApp.apkSha256);
+//
+//                                    // Categories are defined in VerifyAppsConstants.
+//                                    Log.e("MY_APP_TAG",
+//                                            "  Category: " + harmfulApp.apkCategory);
+//                                }
+//                            }
+                        } else {
+                            Log.d("MY_APP_TAG", "An error occurred. " +
+                                    "Call isVerifyAppsEnabled() to ensure " +
+                                    "that the user has consented.");
+                        }
+                    }
+                });
+    }
+
 }
 
-
-
-    //
-//    public void startLoadingScreen(){
-//        try{
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    new ScanningOperation().execute("Scanning");
-//                    //loadingScreen.setStatus("Scanning");
-//                    final PackageManager pm = getPackageManager();
-//                    //get a list of installed apps.
-//                    List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-//                    //changeIntent();
-//                    //finish();
-//
-//                }
-//            });
-//        } catch (Exception e){
-//            Log.e("Thread","Thread");
-//        }
-//
-//    }
-//
-//    private class ScanningOperation extends AsyncTask<String, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(String... params) {
-//            return params[0];
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            super.onPostExecute(result);
-//            TextView txt = findViewById(R.id.statusView);
-//            txt.setText(result);
-//
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {}
-//
-//        @Override
-//        protected void onProgressUpdate(Void... values) {}
-//    }
