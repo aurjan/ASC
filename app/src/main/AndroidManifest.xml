@@ -18,6 +18,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".displayScreens.DisplayClass" />
+        <activity android:name=".displayScreens.ViewAppsPermissions" />
         <activity android:name=".SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

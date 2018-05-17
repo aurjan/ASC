@@ -12,7 +12,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="126dp"
-        android:text="Run First Scan"
+        android:text="Android Security Chief"
         android:textSize="24sp" />
 
     <Button
@@ -25,4 +25,26 @@
         android:layout_marginTop="115dp"
         android:onClick="onButtonClick"
         android:text="Start Scan" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/button2"
+        android:layout_alignStart="@+id/button2"
+        android:layout_below="@+id/button2"
+        android:onClick="onButtonClick"
+        android:layout_marginTop="13dp"
+        android:text="Check apps permissions" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/button2"
+        android:layout_alignStart="@+id/button2"
+        android:layout_below="@+id/button3"
+        android:onClick="onButtonClick"
+        android:layout_marginTop="13dp"
+        android:text="Exit" />
 </RelativeLayout>

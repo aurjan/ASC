@@ -107,10 +107,7 @@ public class BackGroundTasks extends AsyncTask<Map<String,ApplicationInfo>,Void,
 
     @Override
     public void onPostExecute(Map <String,ApplicationInfo> returnMap) {
-//        alertDialog.setMessage(string);
-//        alertDialog.show();
         mCallback.processFinish(returnMap);
-//        delegate.processFinish(string);
 
 
     }
