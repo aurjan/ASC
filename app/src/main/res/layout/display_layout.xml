@@ -57,7 +57,7 @@
         android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="88dp"
-        android:text="Currently selected:" />
+        android:text="item" />
 
     <Button
         android:id="@+id/buttonBack"

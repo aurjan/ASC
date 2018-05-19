@@ -1,11 +1,9 @@
-package com.example.admin.sap.displayScreens;
+package com.example.admin.asc.displayPermissions;
 
 /**
  * Created by Admin on 5/16/2018.
  */
 
-
-import java.util.List;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -17,11 +15,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.admin.sap.R;
+import com.example.admin.asc.R;
 
-public class AppAdapter extends ArrayAdapter<ApplicationInfo>{
+import java.util.List;
+
+public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 
     private List<ApplicationInfo> appList = null;
     private Context context;
@@ -54,7 +53,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo>{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        if(null == view) {
+        if (null == view) {
             LayoutInflater layoutInflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = layoutInflater.inflate(R.layout.list_item, null);
@@ -62,7 +61,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo>{
 
         ApplicationInfo data = appList.get(position);
 
-        if(null != data) {
+        if (null != data) {
             TextView appName = (TextView) view.findViewById(R.id.app_name);
 
             PackageInfo packageInfo = null;
@@ -72,7 +71,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo>{
                 e.printStackTrace();
             }
             int count;
-            if (packageInfo.requestedPermissions != null){
+            if (packageInfo.requestedPermissions != null) {
                 count = packageInfo.requestedPermissions.length;
             } else {
                 count = 0;
@@ -84,8 +83,6 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo>{
             appName.setText(data.loadLabel(packageManager));
             packageName.setText(string);
             iconView.setImageDrawable(data.loadIcon(packageManager));
-
-
 
         }
         return view;

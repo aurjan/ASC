@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.admin.sap">
+    package="com.example.admin.asc">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
@@ -11,22 +11,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.example.admin.asc.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".displayScreens.DisplayClass" />
-        <activity android:name=".displayScreens.ViewAppsPermissions" />
-        <activity android:name=".SplashScreen">
+        <activity android:name="com.example.admin.asc.displayPermissions.DisplayClass" />
+        <activity android:name="com.example.admin.asc.displayPermissions.ViewAppsPermissions" />
+        <activity android:name="com.example.admin.asc.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".loadingScreen.LoadingScreen"/>
+        <activity android:name="com.example.admin.asc.displayScan.LoadingScreen"/>
 
     </application>
 

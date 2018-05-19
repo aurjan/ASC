@@ -1,35 +1,32 @@
-package com.example.admin.sap.displayScreens;
+package com.example.admin.asc.displayPermissions;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.content.pm.ApplicationInfo;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import com.example.admin.sap.MainActivity;
-import com.example.admin.sap.R;
-import com.example.admin.sap.loadingScreen.BackgroudReport;
-import com.example.admin.sap.loadingScreen.LoadingScreen;
+
+import com.example.admin.asc.MainActivity;
+import com.example.admin.asc.R;
+import com.example.admin.asc.displayScan.BackgroudReport;
 import com.google.android.gms.safetynet.HarmfulAppsData;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -42,26 +39,26 @@ import java.util.List;
  */
 
 public class DisplayClass extends Activity implements AdapterView.OnItemSelectedListener {
-    private int total;
-    private int notfound;
-    private int dangerous;
-    private HashMap <String,ApplicationInfo> appMap = new HashMap<>();
+    private static final String dangerousDefault = "No dangerous apps found";
+    private static final String spinnerDefault = "No threats found";
     protected Context context;
     ArrayList<String> progArray = new ArrayList<>();
     ArrayList<String> progArrayDangerous = new ArrayList<>();
-    private static final String dangerousDefault = "No dangerous apps found";
-    private static final String spinnerDefault = "No threats found";
+    private int total;
+    private int notfound;
+    private int dangerous;
+    private HashMap<String, ApplicationInfo> appMap = new HashMap<>();
     private String appSelected;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.display_layout);
-        if (!haveNetworkConnection()){
+        if (!haveNetworkConnection()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Scan cannot be done without internet connection").setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(DisplayClass.this,MainActivity.class);
+                            Intent intent = new Intent(DisplayClass.this, MainActivity.class);
                             finish();
                             startActivity(intent);
                         }
@@ -74,24 +71,23 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
 
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        total = intent.getIntExtra("total",0);
-        appMap = (HashMap<String,ApplicationInfo>) intent.getSerializableExtra("map");
+        total = intent.getIntExtra("total", 0);
+        appMap = (HashMap<String, ApplicationInfo>) intent.getSerializableExtra("map");
         notfound = appMap.size();
-        loadSpinner((HashMap<String,HarmfulAppsData>) intent.getSerializableExtra("harmfulAppsData"));
-
+        loadSpinner((HashMap<String, HarmfulAppsData>) intent.getSerializableExtra("harmfulAppsData"));
 
 
     }
 
     private void loadSpinner() {
-        for (String md5:appMap.keySet()){
+        for (String md5 : appMap.keySet()) {
             progArray.add(appMap.get(md5).packageName);
             System.out.println(appMap.get(md5).packageName);
         }
 
 
         Spinner spinner = findViewById(R.id.spinner);
-        if (progArray.isEmpty()){
+        if (progArray.isEmpty()) {
             progArray.add(spinnerDefault);
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, progArray);
@@ -99,7 +95,6 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
     }
-
 
 
     private boolean haveNetworkConnection() {
@@ -120,7 +115,7 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
     }
 
 
-    private void loadSpinner(HashMap<String,HarmfulAppsData> appList) {
+    private void loadSpinner(HashMap<String, HarmfulAppsData> appList) {
         try {
             String len = "" + appList.size();
             Log.e("spinner", len);
@@ -144,7 +139,7 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
             Log.e("spinner", e.getMessage());
         }
         Spinner spinner = findViewById(R.id.spinner2);
-        if (progArrayDangerous.isEmpty()){
+        if (progArrayDangerous.isEmpty()) {
             progArrayDangerous.add(dangerousDefault);
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, progArrayDangerous);
@@ -153,7 +148,7 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
         spinner.setOnItemSelectedListener(this);
         dangerous = appList.size();
 
-        List <String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         list.add(android.os.Build.MODEL);
         list.add(String.valueOf(total));
         list.add(String.valueOf(dangerous));
@@ -173,10 +168,8 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        if ((keyCode == KeyEvent.KEYCODE_BACK))
-        {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             finish();
         }
         return super.onKeyDown(keyCode, event);
@@ -205,7 +198,7 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
                     for (byte b : digestByteArray) {
                         sb.append(String.format("%02x", b & 0xff));
                     }
-            }
+                }
             }
 
 
@@ -228,27 +221,25 @@ public class DisplayClass extends Activity implements AdapterView.OnItemSelected
 
     }
 
-    public void onButtonClick(View view)
-    {
+    public void onButtonClick(View view) {
         String button_text;
         button_text = ((Button) view).getText().toString();
-        if (button_text.equalsIgnoreCase("Back")){
-            Intent intent = new Intent(this,MainActivity.class);
+        if (button_text.equalsIgnoreCase("Back")) {
+            Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
 
         }
-        if (button_text.equalsIgnoreCase("Delete")){
+        if (button_text.equalsIgnoreCase("Delete")) {
             Intent intent = new Intent(Intent.ACTION_DELETE);
-            intent.setData(Uri.parse("package:"+appSelected));
+            intent.setData(Uri.parse("package:" + appSelected));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
 
         }
     }
-
 
 
 }

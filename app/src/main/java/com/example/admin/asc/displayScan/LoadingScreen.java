@@ -1,4 +1,4 @@
-package com.example.admin.sap.loadingScreen;
+package com.example.admin.asc.displayScan;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,7 +9,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.admin.sap.R;
+import com.example.admin.asc.R;
+import com.example.admin.asc.displayPermissions.DisplayClass;
+import com.google.android.gms.safetynet.HarmfulAppsData;
+import com.google.android.gms.safetynet.SafetyNet;
+import com.google.android.gms.safetynet.SafetyNetApi;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -17,37 +23,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.example.admin.sap.displayScreens.DisplayClass;
-import com.google.android.gms.safetynet.HarmfulAppsData;
-import com.google.android.gms.safetynet.SafetyNet;
-import com.google.android.gms.safetynet.SafetyNetApi;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
 import static android.content.ContentValues.TAG;
 
 /**
  * Created by Admin on 3/10/2018.
  */
 
-public class LoadingScreen extends Activity implements  AsyncResponse{
-    private Map<String,ApplicationInfo> appMap = new HashMap<>();
+public class LoadingScreen extends Activity implements AsyncResponse {
     int total;
-    private HashMap <String, ApplicationInfo> map;
+    private Map<String, ApplicationInfo> appMap = new HashMap<>();
+    private boolean ready = false;
+    private HashMap<String, ApplicationInfo> map;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loadingscreen_layout);
         enable();
-        test();
+        checkEnabled();
+        getGoogleAPI();
+        setStatus();
         checkPackages();
-
 
     }
 
     @Override
-    public void processFinish(Map <String,ApplicationInfo> returnedMap) {
-        map = (HashMap <String, ApplicationInfo>) returnedMap;
+    public void processFinish(Map<String, ApplicationInfo> returnedMap) {
+        map = (HashMap<String, ApplicationInfo>) returnedMap;
+        ready = true;
         getGoogleAPI();
 
     }
@@ -60,7 +63,7 @@ public class LoadingScreen extends Activity implements  AsyncResponse{
         total = packages.size();
         for (ApplicationInfo pack : packages) {
             PackageInfo info = null;
-            if((pack.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 1) {
+            if ((pack.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 1) {
             } else if ((pack.flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
 
             } else {
@@ -95,7 +98,7 @@ public class LoadingScreen extends Activity implements  AsyncResponse{
         backGroundTasks.execute(appMap);
     }
 
-    public void test() {
+    public void setStatus() {
         TextView txt = findViewById(R.id.statusView);
         txt.setText("Scanning");
 
@@ -160,25 +163,23 @@ public class LoadingScreen extends Activity implements  AsyncResponse{
                     public void onComplete(Task<SafetyNetApi.HarmfulAppsResponse> task) {
 
                         Log.d(TAG, "Received listHarmfulApps() result");
-
                         if (task.isSuccessful()) {
                             SafetyNetApi.HarmfulAppsResponse result = task.getResult();
 
-//                                TextView tv = findViewById(R.id.textView3);
-//                                tv.setText("List of threats");
-//                                tv.setMovementMethod(new ScrollingMovementMethod());
                             List<HarmfulAppsData> appList = result.getHarmfulAppsList();
-                            HashMap <String,HarmfulAppsData> harmfulAppsDataHashMap = new HashMap<>();
+                            HashMap<String, HarmfulAppsData> harmfulAppsDataHashMap = new HashMap<>();
 
-                            for (HarmfulAppsData harmfulAppsData: appList){
-                                harmfulAppsDataHashMap.put(harmfulAppsData.toString(),harmfulAppsData);
+                            for (HarmfulAppsData harmfulAppsData : appList) {
+                                harmfulAppsDataHashMap.put(harmfulAppsData.toString(), harmfulAppsData);
                             }
-                            Intent loadingIntent = new Intent(LoadingScreen.this, DisplayClass.class);
-                            loadingIntent.putExtra("total",total);
-                            loadingIntent.putExtra("map", map);
-                            loadingIntent.putExtra("harmfulAppsData", harmfulAppsDataHashMap);
-                            startActivity(loadingIntent);
-                            finish();
+                            if (ready) {
+                                Intent loadingIntent = new Intent(LoadingScreen.this, DisplayClass.class);
+                                loadingIntent.putExtra("total", total);
+                                loadingIntent.putExtra("map", map);
+                                loadingIntent.putExtra("harmfulAppsData", harmfulAppsDataHashMap);
+                                startActivity(loadingIntent);
+                                finish();
+                            }
 
                         } else {
                             Log.d("MY_APP_TAG", "An error occurred. " +

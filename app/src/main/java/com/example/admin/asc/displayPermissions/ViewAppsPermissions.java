@@ -1,13 +1,10 @@
-package com.example.admin.sap.displayScreens;
+package com.example.admin.asc.displayPermissions;
 
 /**
  * Created by Admin on 5/16/2018.
  */
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -23,10 +20,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.admin.sap.R;
-import static java.util.Collections.reverseOrder;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
+import com.example.admin.asc.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ViewAppsPermissions extends ListActivity {
 
@@ -40,7 +37,6 @@ public class ViewAppsPermissions extends ListActivity {
         setContentView(R.layout.permission__layout);
 
         packageManager = getPackageManager();
-        System.out.println("cool");
         new LoadApplications().execute();
     }
 
@@ -52,9 +48,9 @@ public class ViewAppsPermissions extends ListActivity {
         ApplicationInfo app = applist.get(position);
         ArrayAdapter arrayAdapter = null;
 
-        try{
+        try {
             AlertDialog.Builder builder = new AlertDialog.Builder(ViewAppsPermissions.this);
-            View mView = getLayoutInflater().inflate(R.layout.popup_layout,null);
+            View mView = getLayoutInflater().inflate(R.layout.popup_layout, null);
 
             builder.setView(mView);
             Button button = (Button) mView.findViewById(R.id.button7);
@@ -62,10 +58,9 @@ public class ViewAppsPermissions extends ListActivity {
             try {
 
                 PackageInfo packageInfo = packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS);
-                if (packageInfo.requestedPermissions == null){
+                if (packageInfo.requestedPermissions == null) {
                     Toast.makeText(this, "This application doesn't require any permissions", Toast.LENGTH_LONG).show();
-                }
-                else {
+                } else {
                     String[] requestedPermissions = packageInfo.requestedPermissions;
                     System.out.println("lenght :" + requestedPermissions.length);
                     arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, requestedPermissions);
@@ -86,9 +81,9 @@ public class ViewAppsPermissions extends ListActivity {
             }
 
 
-        } catch(ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException e) {
             e.printStackTrace();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -97,28 +92,26 @@ public class ViewAppsPermissions extends ListActivity {
 
         ArrayList<ApplicationInfo> appList = new ArrayList<ApplicationInfo>();
 
-        for(ApplicationInfo info : list) {
-            try{
-                if(packageManager.getLaunchIntentForPackage(info.packageName) != null) {
+        for (ApplicationInfo info : list) {
+            try {
+                if (packageManager.getLaunchIntentForPackage(info.packageName) != null) {
                     appList.add(info);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         return appList;
     }
+
     private class LoadApplications extends AsyncTask<Void, Void, Void> {
         private ProgressDialog progress = null;
 
         @Override
         protected Void doInBackground(Void... params) {
-
             applist = checkForLaunchIntent(packageManager.getInstalledApplications(PackageManager.GET_META_DATA));
-
-            listadapter = new AppAdapter(ViewAppsPermissions.this, R.layout.list_item, applist, packageManager );
-
+            listadapter = new AppAdapter(ViewAppsPermissions.this, R.layout.list_item, applist, packageManager);
             return null;
         }
 
@@ -135,7 +128,6 @@ public class ViewAppsPermissions extends ListActivity {
             super.onPreExecute();
         }
     }
-
 
 
 }

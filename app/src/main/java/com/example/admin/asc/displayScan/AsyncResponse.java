@@ -1,8 +1,7 @@
-package com.example.admin.sap.loadingScreen;
+package com.example.admin.asc.displayScan;
 
 import android.content.pm.ApplicationInfo;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,5 +9,5 @@ import java.util.Map;
  */
 
 public interface AsyncResponse {
-    void processFinish(Map<String,ApplicationInfo> output);
+    void processFinish(Map<String, ApplicationInfo> output);
 }
