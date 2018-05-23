@@ -41,7 +41,6 @@ public class LoadingScreen extends Activity implements AsyncResponse {
         setContentView(R.layout.loadingscreen_layout);
         enable();
         checkEnabled();
-        getGoogleAPI();
         setStatus();
         checkPackages();
 
@@ -155,7 +154,6 @@ public class LoadingScreen extends Activity implements AsyncResponse {
 
     private void getGoogleAPI() {
         setContentView(R.layout.display_layout);
-
         SafetyNet.getClient(this)
                 .listHarmfulApps()
                 .addOnCompleteListener(new OnCompleteListener<SafetyNetApi.HarmfulAppsResponse>() {
@@ -172,14 +170,14 @@ public class LoadingScreen extends Activity implements AsyncResponse {
                             for (HarmfulAppsData harmfulAppsData : appList) {
                                 harmfulAppsDataHashMap.put(harmfulAppsData.toString(), harmfulAppsData);
                             }
-                            if (ready) {
-                                Intent loadingIntent = new Intent(LoadingScreen.this, DisplayClass.class);
-                                loadingIntent.putExtra("total", total);
-                                loadingIntent.putExtra("map", map);
-                                loadingIntent.putExtra("harmfulAppsData", harmfulAppsDataHashMap);
-                                startActivity(loadingIntent);
-                                finish();
-                            }
+
+                            Intent loadingIntent = new Intent(LoadingScreen.this, DisplayClass.class);
+                            loadingIntent.putExtra("total", total);
+                            loadingIntent.putExtra("map", map);
+                            loadingIntent.putExtra("harmfulAppsData", harmfulAppsDataHashMap);
+                            startActivity(loadingIntent);
+                            finish();
+
 
                         } else {
                             Log.d("MY_APP_TAG", "An error occurred. " +
